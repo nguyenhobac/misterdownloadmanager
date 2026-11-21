@@ -205,6 +205,8 @@ pub struct OptionsDialog {
     mb: String,
     /// File types → "Don't take files smaller than", as typed (KB).
     min_kb: String,
+    /// File types → "Download trực tiếp (không dùng MDM) cho file nhỏ hơn MB:", as typed (MB).
+    direct_mb: String,
     hours: String,
     /// The exceptions' and site logins' lists: scroll and selection.
     exc_rows: winui::RowList,
@@ -339,6 +341,7 @@ impl OptionsDialog {
             conns: s.max_connections.clamp(1, s.connection_limit()).to_string(),
             mb: s.limits_mb.to_string(),
             min_kb: s.capture_min_kb.to_string(),
+            direct_mb: s.capture_direct_mb.to_string(),
             hours: s.limits_hours.to_string(),
             s,
             page: 0,
@@ -479,6 +482,7 @@ impl OptionsDialog {
                     .clamp(1, s.connection_limit());
                 s.limits_mb = self.mb.parse().unwrap_or(200).max(1);
                 s.capture_min_kb = self.min_kb.parse().unwrap_or(0);
+                s.capture_direct_mb = self.direct_mb.parse().unwrap_or(10);
                 s.limits_hours = self.hours.parse().unwrap_or(5).max(1);
                 s.remote_port = self.remote_port();
                 Outcome::Done(s)
@@ -1037,6 +1041,28 @@ impl OptionsDialog {
             &mut self.min_kb,
             0,
             10_000_000,
+            true,
+            LIGHT_PAGE(),
+        );
+        let direct_label = crate::i18n::t("Download trực tiếp (không dùng MDM) cho file nhỏ hơn MB:");
+        let (direct_rect, direct_cut) = winui::label_into(
+            &p,
+            o.x + 21.0,
+            o.y + 411.0,
+            direct_label,
+            LIGHT_TEXT(),
+            o.x + 316.0,
+            o.x + 21.0,
+        );
+        if direct_cut {
+            winui::full_on_hover(ui, direct_rect, ("types-direct-mb", 411), direct_label);
+        }
+        winui::number_field(
+            ui,
+            r(o, 316.0, 398.0, 73.0, 21.0),
+            &mut self.direct_mb,
+            0,
+            1_000_000,
             true,
             LIGHT_PAGE(),
         );

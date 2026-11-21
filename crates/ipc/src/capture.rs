@@ -66,12 +66,19 @@ pub struct CaptureRules {
     /// Options → File types: files smaller than this (KB) stay with the browser (a receipt, an
     /// icon); 0 takes any size. Only when the browser knows the size.
     pub capture_min_kb: u64,
+    /// Options → File types: files smaller than this (MB) download directly without MDM; 0 = off.
+    #[serde(default = "default_capture_direct_mb")]
+    pub capture_direct_mb: u64,
     /// Torrent settings → "Open magnet links and .torrent files with Mister Download Manager"
     /// as the app settled it (`Settings::torrent_associations`, saved under this name). Off, a
     /// .torrent the browser downloads stays with the browser too, which opens it in the user's
     /// own torrent client (#1058), though TORRENT is in File types. None (not decided yet: an
     /// app that hasn't started since its update): taken, as before (`takes_torrents`).
     pub torrent_handler: Option<bool>,
+}
+
+fn default_capture_direct_mb() -> u64 {
+    10
 }
 
 impl Default for CaptureRules {
@@ -87,6 +94,7 @@ impl Default for CaptureRules {
             video_panel_compact: false,
             capture_opened: true,
             capture_min_kb: 0,
+            capture_direct_mb: 10,
             torrent_handler: None,
         }
     }
@@ -191,7 +199,11 @@ impl CaptureRules {
 
     /// Is a file of `size` bytes (the browser's figure, when it has one) too small to take?
     pub fn too_small(&self, size: Option<u64>) -> bool {
-        size.is_some_and(|s| s > 0 && s < self.capture_min_kb.saturating_mul(1024))
+        let min_bytes = self
+            .capture_min_kb
+            .saturating_mul(1024)
+            .max(self.capture_direct_mb.saturating_mul(1024 * 1024));
+        size.is_some_and(|s| s > 0 && s < min_bytes)
     }
 
     /// Does the file name's extension appear in File types (`R0*` patterns too)?

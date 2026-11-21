@@ -415,7 +415,7 @@ fn answer(m: Message, rules: &mdm_ipc::capture::CaptureRules) -> Reply {
             excluded_sites: Some(rules.excluded_sites.clone()),
             excluded_addresses: Some(rules.excluded_addresses.clone()),
             opened: Some(rules.capture_opened),
-            min_kb: Some(rules.capture_min_kb),
+            min_kb: Some(rules.capture_min_kb.max(rules.capture_direct_mb.saturating_mul(1024))),
             capture_off: rules.capture_off(browser).map(|d| d.code()),
             torrents: Some(rules.takes_torrents()),
             video_lookup: Some(true),

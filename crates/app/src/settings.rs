@@ -354,6 +354,9 @@ pub struct Settings {
     pub capture_opened: bool,
     /// File types: files smaller than this (KB) stay with the browser; 0 takes any size.
     pub capture_min_kb: u64,
+    /// File types: files smaller than this (MB) download directly without MDM; 0 = off.
+    #[serde(default = "default_capture_direct_mb")]
+    pub capture_direct_mb: u64,
     /// Options → Regional: how dates and times are written.
     pub regional: crate::regional::Regional,
     /// Save to: a folder per category (category label → folder); missing = the default.
@@ -590,6 +593,10 @@ impl Settings {
     }
 }
 
+fn default_capture_direct_mb() -> u64 {
+    10
+}
+
 impl Default for Settings {
     fn default() -> Self {
         Settings {
@@ -645,6 +652,7 @@ impl Default for Settings {
             video_panel_compact: false,
             capture_opened: true,
             capture_min_kb: 0,
+            capture_direct_mb: 10,
             regional: crate::regional::Regional::default(),
             category_dirs: Vec::new(),
             change_folder_on_last: true,
